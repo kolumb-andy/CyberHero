@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Квест-гра: Кібергерой</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f8ff; margin: 0; padding: 20px; }
+    h1 { font-size: 3em; margin-bottom: 20px; }
+    .heroes { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+    .hero { border: 2px solid #ccc; border-radius: 10px; padding: 20px; width: 250px; background: white; }
+    .hero img { width: 200px; height: 200px; object-fit: cover; border-radius: 10px; }
+    .hero button { margin-top: 15px; padding: 10px 20px; font-size: 1em; cursor: pointer; border: none; background-color: #0077cc; color: white; border-radius: 5px; }
+    .hero button:hover { background-color: #005fa3; }
+    #game-screen { margin-top: 30px; }
+    button.option { display: block; margin: 10px auto; padding: 10px 20px; font-size: 1em; border: none; border-radius: 5px; background-color: #0077cc; color: white; cursor: pointer; }
+    button.option:hover { background-color: #005fa3; }
+  </style>
+</head>
+<body>
+
+  <div id="main-page">
+    <h1>Квест-гра: Кібергерой</h1>
+    <p>ОБЕРИ ГЕРОЯ:</p>
+    <div class="heroes">
+      <div class="hero">
+        <img src="https://i.ibb.co/7J3HfPPs/image.png" alt="Учень">
+        <h3>Учень</h3>
+        <button onclick="startGame('pupil')">Почати гру</button>
+      </div>
+      <div class="hero">
+        <img src="https://i.ibb.co/Kxdckd3n/image.png" alt="Студент">
+        <h3>Студент</h3>
+        <button onclick="startGame('student')">Почати гру</button>
+      </div>
+      <div class="hero">
+        <img src="https://i.ibb.co/pBG9vK0j/image.png" alt="Викладач">
+        <h3>Викладач</h3>
+        <button onclick="startGame('teacher')">Почати гру</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-screen" style="display: none;">
+    <h2 id="role-title"></h2>
+    <div id="question-box"></div>
+  </div>
+
+  <script>
+    const questions = {
+      pupil: [
+        {
+          text: "Тобі надійшло повідомлення від незнайомця з проханням додати його в друзі.",
+          options: [
+            { text: "Приймаю", correct: false },
+            { text: "Ігнорую", correct: true },
+            { text: "Відповідаю: «Хто ти?»", correct: false }
+          ]
+        },
+        {
+          text: "Тобі пропонують перейти за посиланням для виграшу телефону.",
+          options: [
+            { text: "Перехожу", correct: false },
+            { text: "Не переходжу", correct: true },
+            { text: "Надсилаю друзям", correct: false }
+          ]
+        },
+        {
+          text: "У комп’ютерному класі ти помічаєш, що комп’ютер залишили увімкненим з відкритим акаунтом.",
+          options: [
+            { text: "Нічого не роблю", correct: false },
+            { text: "Пишу щось від його імені", correct: false },
+            { text: "Повідомляю вчителя", correct: true }
+          ]
+        }
+      ],
+      student: [
+        {
+          text: "Отримано лист від викладача з підозрілою адресою. Що ти зробиш?",
+          options: [
+            { text: "Перевірю адресу та не відкриватиму вкладення", correct: true },
+            { text: "Одразу відкриваю файл", correct: false },
+            { text: "Пересилаю листа одногрупникам", correct: false }
+          ]
+        },
+        {
+          text: "Тобі пропонують встановити безкоштовний VPN з незнайомого сайту.",
+          options: [
+            { text: "Скачую", correct: false },
+            { text: "Шукаю офіційний сайт або не встановлюю", correct: true },
+            { text: "Прошу когось іншого встановити", correct: false }
+          ]
+        },
+        {
+          text: "У Wi-Fi зони в університеті виявляєш нову мережу з назвою «FREE_UniNet».",
+          options: [
+            { text: "Одразу підключаюсь", correct: false },
+            { text: "Перевіряю у викладача/адміністрації", correct: true },
+            { text: "Надаю дані для авторизації", correct: false }
+          ]
+        }
+      ],
+      teacher: [
+        {
+          text: "Учень просить ваш пароль, аби щось показати на комп’ютері.",
+          options: [
+            { text: "Надаю пароль", correct: false },
+            { text: "Відмовляю та контролюю дії сам", correct: true },
+            { text: "Прошу написати на папірці", correct: false }
+          ]
+        },
+        {
+          text: "Отримали спам з вірусом у вкладенні. Що робити?",
+          options: [
+            { text: "Відкриваю — раптом важливо", correct: false },
+            { text: "Повідомляю ІТ-відділ та не відкриваю", correct: true },
+            { text: "Видаляю і забуваю", correct: false }
+          ]
+        },
+        {
+          text: "У класі виявили сторонній USB у комп’ютері.",
+          options: [
+            { text: "Перевіряю вміст", correct: false },
+            { text: "Передаю ІТ-відповідальному", correct: true },
+            { text: "Використовую для власної презентації", correct: false }
+          ]
+        }
+      ]
+    };
+
+    let currentRole = "";
+    let currentQuestion = 0;
+
+    function startGame(role) {
+      currentRole = role;
+      currentQuestion = 0;
+      document.getElementById("main-page").style.display = "none";
+      document.getElementById("game-screen").style.display = "block";
+      document.getElementById("role-title").innerText = "Герой: " + getRoleName(role);
+      showQuestion();
+    }
+
+    function getRoleName(role) {
+      return role === "pupil" ? "Учень" : role === "student" ? "Студент" : "Викладач";
+    }
+
+    function showQuestion() {
+      const container = document.getElementById("question-box");
+      const question = questions[currentRole][currentQuestion];
+      let html = `<p><strong>Питання ${currentQuestion + 1}:</strong> ${question.text}</p>`;
+      question.options.forEach(opt => {
+        html += `<button class="option" onclick="handleAnswer(${opt.correct})">${opt.text}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function handleAnswer(isCorrect) {
+      const container = document.getElementById("question-box");
+      if (isCorrect) {
+        currentQuestion++;
+        if (currentQuestion < questions[currentRole].length) {
+          showQuestion();
+        } else {
+          container.innerHTML = `<p><strong>Вітаємо! Ви успішно пройшли квест!</strong></p>
+          <button onclick="location.reload()">Почати спочатку</button>`;
+        }
+      } else {
+        container.innerHTML = `<p><strong>Неправильна відповідь. Гру завершено.</strong></p>
+        <button onclick="location.reload()">Спробувати знову</button>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
